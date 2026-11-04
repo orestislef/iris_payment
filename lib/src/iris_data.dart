@@ -28,8 +28,8 @@ enum IrisQrType {
 ///
 /// ```dart
 /// // Static QR for a business
-/// final data = IrisData.fromAfm('123456789');
-/// print(data.qrString); // "IRISTIN123456789"
+/// final data = IrisData.fromAfm('090000045');
+/// print(data.qrString); // "IRISTIN090000045"
 ///
 /// // Dynamic QR from a payment gateway
 /// final tx = IrisData.fromTransactionId('52bb5e73-2ebd-4299-9ccf-e9714b9873fc');

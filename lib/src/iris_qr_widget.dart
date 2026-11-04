@@ -4,18 +4,28 @@ import 'iris_data.dart';
 
 /// A Flutter widget that renders an IRIS payment QR code.
 ///
-/// Displays a QR code containing the IRIS payment string for the given AFM.
+/// Pass either an [afm] for a static store QR, or ready-made [data]
+/// (for example a dynamic `IRISCOM` QR from a payment gateway).
 /// Supports customizable size, colors, and an optional center logo.
 ///
 /// ```dart
 /// IrisQrCode(
-///   afm: '123456789',
+///   afm: '090000045',
 ///   size: 250,
+/// )
+///
+/// IrisQrCode(
+///   data: IrisData.fromTransactionId('52bb5e73-2ebd-4299-9ccf-e9714b9873fc'),
 /// )
 /// ```
 class IrisQrCode extends StatelessWidget {
-  /// The AFM (Greek VAT number) to encode.
-  final String afm;
+  /// The AFM (Greek VAT number) to encode as a static QR.
+  ///
+  /// Ignored when [data] is set.
+  final String? afm;
+
+  /// Ready-made IRIS data to encode. Takes priority over [afm].
+  final IrisData? data;
 
   /// Size of the QR code in logical pixels. Default: 200.
   final double size;
@@ -53,9 +63,20 @@ class IrisQrCode extends StatelessWidget {
   /// Border color. Default: grey[300].
   final Color? borderColor;
 
+  /// Text shown instead of the QR code when the AFM is invalid.
+  /// Default: `Invalid AFM`.
+  final String invalidText;
+
+  /// Label read out by screen readers. Default: `IRIS payment QR code`.
+  final String semanticsLabel;
+
+  /// Creates an IRIS QR code from an [afm] or from [data].
+  ///
+  /// One of the two must be provided.
   const IrisQrCode({
     super.key,
-    required this.afm,
+    this.afm,
+    this.data,
     this.size = 200,
     this.foregroundColor = Colors.black,
     this.backgroundColor = Colors.white,
@@ -66,18 +87,27 @@ class IrisQrCode extends StatelessWidget {
     this.borderRadius = 8,
     this.showBorder = true,
     this.borderColor,
-  });
+    this.invalidText = 'Invalid AFM',
+    this.semanticsLabel = 'IRIS payment QR code',
+  }) : assert(afm != null || data != null, 'Provide either afm or data');
+
+  /// The IRIS data this widget encodes, or `null` if the AFM is invalid.
+  IrisData? get irisData {
+    final afm = this.afm;
+    return data ?? (afm == null ? null : IrisData.tryFromAfm(afm));
+  }
 
   @override
   Widget build(BuildContext context) {
-    final irisData = IrisData.tryFromAfm(afm);
+    final irisData = this.irisData;
     if (irisData == null) {
       return SizedBox(
         width: size,
         height: size,
         child: Center(
           child: Text(
-            'Invalid AFM',
+            invalidText,
+            textAlign: TextAlign.center,
             style: TextStyle(
               color: Theme.of(context).colorScheme.error,
               fontWeight: FontWeight.bold,
@@ -107,8 +137,9 @@ class IrisQrCode extends StatelessWidget {
           QrImageView(
             data: irisData.qrString,
             version: QrVersions.auto,
-            size: size - 16,
+            size: (size - 16).clamp(0.0, double.infinity),
             errorCorrectionLevel: errorCorrectionLevel,
+            semanticsLabel: semanticsLabel,
             eyeStyle: QrEyeStyle(
               eyeShape: QrEyeShape.square,
               color: foregroundColor,
@@ -145,15 +176,29 @@ class IrisQrCode extends StatelessWidget {
 /// Displays the QR code with an optional business name and AFM label.
 /// Useful for printing or displaying at a point of sale.
 ///
+/// All visible text can be changed, so the card works in Greek too:
+///
 /// ```dart
 /// IrisPaymentCard(
-///   afm: '123456789',
+///   afm: '090000045',
 ///   businessName: 'My Shop',
+/// )
+///
+/// IrisPaymentCard(
+///   afm: '090000045',
+///   businessName: 'Καφέ Το Στέκι',
+///   title: 'Πληρωμή με IRIS',
+///   afmLabel: 'ΑΦΜ',
+///   scanLabel: 'Σκανάρετε για πληρωμή',
+///   invalidText: 'Μη έγκυρο ΑΦΜ',
 /// )
 /// ```
 class IrisPaymentCard extends StatelessWidget {
-  /// The AFM to encode.
-  final String afm;
+  /// The AFM to encode. Ignored for the QR when [data] is set.
+  final String? afm;
+
+  /// Ready-made IRIS data to encode. Takes priority over [afm].
+  final IrisData? data;
 
   /// Business name to display above the QR code.
   final String? businessName;
@@ -174,6 +219,8 @@ class IrisPaymentCard extends StatelessWidget {
   final double logoSize;
 
   /// Whether to show the AFM text below the QR code. Default: true.
+  ///
+  /// Nothing is shown for dynamic QR data, since it has no AFM.
   final bool showAfm;
 
   /// Card elevation. Default: 2.
@@ -182,9 +229,27 @@ class IrisPaymentCard extends StatelessWidget {
   /// Card border radius. Default: 12.
   final double borderRadius;
 
+  /// Heading at the top of the card. Default: `IRIS Payment`.
+  final String title;
+
+  /// Label in front of the AFM number. Default: `AFM`.
+  final String afmLabel;
+
+  /// Hint at the bottom of the card. Default: `Scan to pay`.
+  /// Set to `null` to hide it.
+  final String? scanLabel;
+
+  /// Text shown instead of the QR code when the AFM is invalid.
+  /// Default: `Invalid AFM`.
+  final String invalidText;
+
+  /// Creates an IRIS payment card from an [afm] or from [data].
+  ///
+  /// One of the two must be provided.
   const IrisPaymentCard({
     super.key,
-    required this.afm,
+    this.afm,
+    this.data,
     this.businessName,
     this.qrSize = 200,
     this.foregroundColor = Colors.black,
@@ -194,10 +259,18 @@ class IrisPaymentCard extends StatelessWidget {
     this.showAfm = true,
     this.elevation = 2,
     this.borderRadius = 12,
-  });
+    this.title = 'IRIS Payment',
+    this.afmLabel = 'AFM',
+    this.scanLabel = 'Scan to pay',
+    this.invalidText = 'Invalid AFM',
+  }) : assert(afm != null || data != null, 'Provide either afm or data');
 
   @override
   Widget build(BuildContext context) {
+    final data = this.data;
+    final shownAfm = data != null ? data.afm : afm;
+    final scanLabel = this.scanLabel;
+
     return Card(
       elevation: elevation,
       shape: RoundedRectangleBorder(
@@ -209,14 +282,13 @@ class IrisPaymentCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // IRIS label
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.qr_code_2, size: 20, color: foregroundColor),
                 const SizedBox(width: 6),
                 Text(
-                  'IRIS Payment',
+                  title,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -225,7 +297,6 @@ class IrisPaymentCard extends StatelessWidget {
                 ),
               ],
             ),
-
             if (businessName != null) ...[
               const SizedBox(height: 8),
               Text(
@@ -238,24 +309,22 @@ class IrisPaymentCard extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ],
-
             const SizedBox(height: 12),
-
-            // QR code
             IrisQrCode(
               afm: afm,
+              data: data,
               size: qrSize,
               foregroundColor: foregroundColor,
               backgroundColor: backgroundColor,
               logo: logo,
               logoSize: logoSize,
               showBorder: false,
+              invalidText: invalidText,
             ),
-
-            if (showAfm) ...[
+            if (showAfm && shownAfm != null) ...[
               const SizedBox(height: 8),
               Text(
-                'AFM: ${_formatAfm(afm)}',
+                '$afmLabel: ${_formatAfm(shownAfm)}',
                 style: TextStyle(
                   fontSize: 13,
                   color: foregroundColor.withValues(alpha: 0.5),
@@ -264,22 +333,23 @@ class IrisPaymentCard extends StatelessWidget {
                 ),
               ),
             ],
-
-            const SizedBox(height: 4),
-            Text(
-              'Scan to pay',
-              style: TextStyle(
-                fontSize: 12,
-                color: foregroundColor.withValues(alpha: 0.4),
+            if (scanLabel != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                scanLabel,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: foregroundColor.withValues(alpha: 0.4),
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  String _formatAfm(String afm) {
+  static String _formatAfm(String afm) {
     final cleaned = afm.replaceAll(RegExp(r'[\s\-]'), '');
     if (cleaned.length == 9) {
       return '${cleaned.substring(0, 3)} ${cleaned.substring(3, 6)} ${cleaned.substring(6)}';

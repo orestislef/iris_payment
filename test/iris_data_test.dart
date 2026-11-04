@@ -37,13 +37,11 @@ void main() {
 
     group('fromTransactionId (dynamic QR)', () {
       test('creates IRISCOM string from UUID', () {
-        final data = IrisData.fromTransactionId(
-            '52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
-        expect(data.qrString,
-            'IRISCOM52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
+        final data =
+            IrisData.fromTransactionId('52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
+        expect(data.qrString, 'IRISCOM52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
         expect(data.type, IrisQrType.com);
-        expect(data.transactionId,
-            '52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
+        expect(data.transactionId, '52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
       });
 
       test('throws on empty transaction ID', () {
@@ -65,8 +63,7 @@ void main() {
             IrisData.parse('IRISCOM52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
         expect(data, isNotNull);
         expect(data!.type, IrisQrType.com);
-        expect(data.transactionId,
-            '52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
+        expect(data.transactionId, '52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
       });
 
       test('returns null for invalid strings', () {

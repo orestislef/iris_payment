@@ -52,8 +52,17 @@ void main() {
     test('checksum algorithm is correct', () {
       // For AFM "090000045":
       // 0*256 + 9*128 + 0*64 + 0*32 + 0*16 + 0*8 + 0*4 + 4*2 = 1152 + 8 = 1160
-      // 1160 % 11 = 5, 5 % 10 = 5 ✓ (last digit is 5)
+      // 1160 % 11 = 5, 5 % 10 = 5, matches the last digit
       expect(AfmValidator.isValid('090000045'), true);
+    });
+
+    test('formValidator returns null or the error message', () {
+      expect(AfmValidator.formValidator('090000045'), isNull);
+      expect(AfmValidator.formValidator('090 000 045'), isNull);
+      expect(AfmValidator.formValidator(null), 'AFM is required');
+      expect(AfmValidator.formValidator('  '), 'AFM is required');
+      expect(AfmValidator.formValidator('123'), contains('9 digits'));
+      expect(AfmValidator.formValidator('090000044'), 'Invalid AFM checksum');
     });
   });
 }

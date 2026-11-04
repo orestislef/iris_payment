@@ -10,8 +10,10 @@ class AfmValidationResult {
 
   static const _valid = AfmValidationResult._(isValid: true);
 
+  /// A successful result with no message.
   factory AfmValidationResult.valid() => _valid;
 
+  /// A failed result with the reason in [message].
   factory AfmValidationResult.invalid(String message) =>
       AfmValidationResult._(isValid: false, message: message);
 }
@@ -23,37 +25,37 @@ class AfmValidationResult {
 /// powers of 2.
 ///
 /// ```dart
-/// AfmValidator.isValid('123456789'); // true or false
+/// AfmValidator.isValid('090000045'); // true
 ///
 /// final result = AfmValidator.validate('123456789');
-/// if (result.isValid) {
-///   print('Valid AFM');
-/// } else {
-///   print(result.message); // e.g., "Invalid checksum"
+/// if (!result.isValid) {
+///   print(result.message); // "Invalid AFM checksum"
 /// }
 /// ```
 class AfmValidator {
   AfmValidator._();
 
-  /// Validate an AFM and return a detailed result.
-  static AfmValidationResult validate(String afm) {
-    // Strip whitespace and dashes
-    afm = afm.replaceAll(RegExp(r'[\s\-]'), '');
+  static final _separators = RegExp(r'[\s\-]');
+  static final _nineDigits = RegExp(r'^\d{9}$');
 
-    // Must be exactly 9 digits
-    if (!RegExp(r'^\d{9}$').hasMatch(afm)) {
+  /// Validate an AFM and return a detailed result.
+  ///
+  /// Whitespace and dashes are ignored, so `090 000 045` and `090-000-045`
+  /// are both accepted.
+  static AfmValidationResult validate(String afm) {
+    afm = afm.replaceAll(_separators, '');
+
+    if (!_nineDigits.hasMatch(afm)) {
       return AfmValidationResult.invalid(
         'AFM must contain exactly 9 digits',
       );
     }
 
-    // All zeros is invalid
     if (afm == '000000000') {
       return AfmValidationResult.invalid('Invalid AFM');
     }
 
-    // Checksum: weighted sum using powers of 2
-    // Weights: 256, 128, 64, 32, 16, 8, 4, 2 for digits 0-7
+    // Weights 256, 128, 64, 32, 16, 8, 4, 2 for digits 0-7.
     // Check digit (digit 8) = (sum % 11) % 10
     int sum = 0;
     for (int i = 0; i < 8; i++) {
@@ -74,8 +76,20 @@ class AfmValidator {
   /// Formats an AFM by stripping whitespace and dashes.
   /// Returns the cleaned 9-digit string, or null if invalid.
   static String? format(String afm) {
-    final cleaned = afm.replaceAll(RegExp(r'[\s\-]'), '');
+    final cleaned = afm.replaceAll(_separators, '');
     if (isValid(cleaned)) return cleaned;
     return null;
+  }
+
+  /// Validator you can pass straight to a `TextFormField`.
+  ///
+  /// Returns `null` when the AFM is valid, otherwise the error message.
+  ///
+  /// ```dart
+  /// TextFormField(validator: AfmValidator.formValidator)
+  /// ```
+  static String? formValidator(String? value) {
+    if (value == null || value.trim().isEmpty) return 'AFM is required';
+    return validate(value).message;
   }
 }
