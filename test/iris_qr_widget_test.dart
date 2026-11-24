@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:iris_payment/iris_payment.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -12,6 +12,30 @@ Widget _wrap(Widget child) => MaterialApp(
 String? _qrDataIn(WidgetTester tester) {
   expect(find.byType(QrImageView), findsOneWidget);
   return tester.widget<IrisQrCode>(find.byType(IrisQrCode)).irisData?.qrString;
+}
+
+/// Every [name] widget in the tree is material_ui's [type]. Counted by name
+/// so a widget of `package:flutter/material.dart` with the same name, which
+/// this file cannot even refer to, would show up as a difference.
+void _onlyMaterialUi(WidgetTester tester) {
+  final types = <String, Type>{
+    'MaterialApp': MaterialApp,
+    'Theme': Theme,
+    'Scaffold': Scaffold,
+    'Material': Material,
+    'Card': Card,
+  };
+  for (final MapEntry(key: name, value: type) in types.entries) {
+    final byName = find
+        .byWidgetPredicate((w) => w.runtimeType.toString() == name)
+        .evaluate()
+        .length;
+    expect(
+      find.byType(type).evaluate().length,
+      byName,
+      reason: "a $name that is not material_ui's",
+    );
+  }
 }
 
 void main() {
@@ -108,6 +132,89 @@ void main() {
       final data = IrisData.fromAfm('090000045');
       expect(() => data.toPngBytes(size: 60, margin: 32), throwsArgumentError);
       expect(() => data.toPngBytes(margin: -1), throwsArgumentError);
+    });
+  });
+
+  // This file imports material_ui only, so there is no Theme or Material of
+  // the framework's in these trees.
+  group('material_ui', () {
+    const error = Color(0xFF8E24AA);
+    const shadow = Color(0xFF00695C);
+    final theme = ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.teal,
+      ).copyWith(error: error),
+      cardTheme: const CardThemeData(
+        shadowColor: shadow,
+        margin: EdgeInsets.all(20),
+      ),
+    );
+
+    Widget app(Widget child, {ThemeData? theme}) => MaterialApp(
+      theme: theme,
+      home: Scaffold(body: SingleChildScrollView(child: child)),
+    );
+
+    testWidgets('the QR and the card build with no framework Material', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        app(const IrisPaymentCard(afm: '090000045', businessName: 'Shop')),
+      );
+      expect(tester.takeException(), isNull);
+      _onlyMaterialUi(tester);
+      expect(_qrDataIn(tester), 'IRISTIN090000045');
+      expect(find.byType(Card), findsOneWidget);
+    });
+
+    testWidgets('the invalid text takes the error color of the theme', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        app(const IrisQrCode(afm: '123456789'), theme: theme),
+      );
+      _onlyMaterialUi(tester);
+      expect(tester.widget<Text>(find.text('Invalid AFM')).style?.color, error);
+
+      final dark = ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.teal,
+          brightness: Brightness.dark,
+        ),
+      );
+      await tester.pumpWidget(
+        app(const IrisQrCode(afm: '123456789'), theme: dark),
+      );
+      // MaterialApp animates from one theme to the next.
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<Text>(find.text('Invalid AFM')).style?.color,
+        dark.colorScheme.error,
+      );
+    });
+
+    testWidgets("the card follows the theme's CardThemeData", (tester) async {
+      await tester.pumpWidget(
+        app(const IrisPaymentCard(afm: '090000045'), theme: theme),
+      );
+      _onlyMaterialUi(tester);
+      final material = tester.widget<Material>(
+        find.descendant(of: find.byType(Card), matching: find.byType(Material)),
+      );
+      expect(material.shadowColor, shadow);
+      expect(
+        tester
+            .widget<Padding>(
+              find
+                  .descendant(
+                    of: find.byType(Card),
+                    matching: find.byType(Padding),
+                  )
+                  .first,
+            )
+            .padding,
+        const EdgeInsets.all(20),
+      );
     });
   });
 }

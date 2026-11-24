@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:iris_payment/iris_payment.dart';
 
 void main() => runApp(const ExampleApp());

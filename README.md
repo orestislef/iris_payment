@@ -19,10 +19,10 @@ Greek IRIS payment QR code generator for Flutter. Validate AFM (Greek VAT/Tax ID
 
 ```yaml
 dependencies:
-  iris_payment: ^0.2.0
+  iris_payment: ^0.3.0
 ```
 
-Requires Flutter 3.27 or newer.
+Requires Flutter 3.47 or newer. The widgets are built on [material_ui](https://pub.dev/packages/material_ui), the Material library that replaced `package:flutter/material.dart`, and read its `Theme` (the error color of the invalid AFM text, the card's `CardThemeData`). Use `package:material_ui/material_ui.dart` in your app too. An app still on `package:flutter/material.dart` stays on `iris_payment: ^0.2.0`.
 
 ## Usage
 
@@ -69,6 +69,9 @@ print(parsed?.afm);  // "090000045"
 ### Display QR Code Widget
 
 ```dart
+import 'package:iris_payment/iris_payment.dart';
+import 'package:material_ui/material_ui.dart';
+
 // Simple QR code
 IrisQrCode(
   afm: '090000045',

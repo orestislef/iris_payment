@@ -2,7 +2,7 @@ name: iris_payment
 description: >-
   Greek IRIS payment QR codes for Flutter. Validate AFM tax IDs, build and
   parse IRIS QR data, render styled QR widgets and export them as PNG.
-version: 0.2.0
+version: 0.3.0
 homepage: https://orestislef.gr/
 repository: https://github.com/orestislef/iris_payment
 issue_tracker: https://github.com/orestislef/iris_payment/issues
@@ -23,12 +23,13 @@ platforms:
   linux:
 
 environment:
-  sdk: ^3.6.0
-  flutter: ">=3.27.0"
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
 
 dependencies:
   flutter:
     sdk: flutter
+  material_ui: ^1.11.1
   qr_flutter: ^4.1.0
 
 dev_dependencies:
