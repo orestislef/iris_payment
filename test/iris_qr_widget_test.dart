@@ -4,8 +4,8 @@ import 'package:iris_payment/iris_payment.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      home: Scaffold(body: SingleChildScrollView(child: child)),
-    );
+  home: Scaffold(body: SingleChildScrollView(child: child)),
+);
 
 /// The string encoded by the single [IrisQrCode] on screen, after
 /// checking that a QR is actually drawn.
@@ -46,17 +46,16 @@ void main() {
     });
 
     testWidgets('renders dynamic QR from data', (tester) async {
-      final tx =
-          IrisData.fromTransactionId('52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
+      final tx = IrisData.fromTransactionId(
+        '52bb5e73-2ebd-4299-9ccf-e9714b9873fc',
+      );
       await tester.pumpWidget(_wrap(IrisQrCode(data: tx)));
       expect(_qrDataIn(tester), 'IRISCOM52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
     });
 
     testWidgets('data takes priority over afm', (tester) async {
       final tx = IrisData.fromTransactionId('abc');
-      await tester.pumpWidget(
-        _wrap(IrisQrCode(afm: '090000045', data: tx)),
-      );
+      await tester.pumpWidget(_wrap(IrisQrCode(afm: '090000045', data: tx)));
       expect(_qrDataIn(tester), 'IRISCOMabc');
     });
 
@@ -86,12 +85,14 @@ void main() {
 
     testWidgets('custom Greek labels', (tester) async {
       await tester.pumpWidget(
-        _wrap(const IrisPaymentCard(
-          afm: '090000045',
-          title: 'Πληρωμή με IRIS',
-          afmLabel: 'ΑΦΜ',
-          scanLabel: 'Σκανάρετε για πληρωμή',
-        )),
+        _wrap(
+          const IrisPaymentCard(
+            afm: '090000045',
+            title: 'Πληρωμή με IRIS',
+            afmLabel: 'ΑΦΜ',
+            scanLabel: 'Σκανάρετε για πληρωμή',
+          ),
+        ),
       );
       expect(find.text('Πληρωμή με IRIS'), findsOneWidget);
       expect(find.text('ΑΦΜ: 090 000 045'), findsOneWidget);
@@ -141,9 +142,8 @@ void main() {
     const error = Color(0xFF8E24AA);
     const shadow = Color(0xFF00695C);
     final theme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.teal,
-      ).copyWith(error: error),
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal)
+          .copyWith(error: error),
       cardTheme: const CardThemeData(
         shadowColor: shadow,
         margin: EdgeInsets.all(20),

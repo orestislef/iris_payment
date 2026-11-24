@@ -28,8 +28,9 @@ class _IrisExampleState extends State<IrisExample> {
   final _controller = TextEditingController(text: '090000045');
 
   // A dynamic QR normally comes from your payment gateway.
-  final _gatewayQr =
-      IrisData.fromTransactionId('52bb5e73-2ebd-4299-9ccf-e9714b9873fc');
+  final _gatewayQr = IrisData.fromTransactionId(
+    '52bb5e73-2ebd-4299-9ccf-e9714b9873fc',
+  );
 
   int? _pngSize;
 
@@ -66,15 +67,9 @@ class _IrisExampleState extends State<IrisExample> {
           const SizedBox(height: 24),
 
           // Static QR from the AFM
-          IrisQrCode(
-            afm: _controller.text,
-            size: 250,
-          ),
+          IrisQrCode(afm: _controller.text, size: 250),
           const SizedBox(height: 12),
-          FilledButton(
-            onPressed: _exportPng,
-            child: const Text('Export PNG'),
-          ),
+          FilledButton(onPressed: _exportPng, child: const Text('Export PNG')),
           if (_pngSize != null) Text('PNG ready, $_pngSize bytes'),
           const SizedBox(height: 32),
 

@@ -46,9 +46,7 @@ class AfmValidator {
     afm = afm.replaceAll(_separators, '');
 
     if (!_nineDigits.hasMatch(afm)) {
-      return AfmValidationResult.invalid(
-        'AFM must contain exactly 9 digits',
-      );
+      return AfmValidationResult.invalid('AFM must contain exactly 9 digits');
     }
 
     if (afm == '000000000') {

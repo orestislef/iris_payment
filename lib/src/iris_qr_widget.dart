@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+
 import 'iris_data.dart';
 
 /// A Flutter widget that renders an IRIS payment QR code.
@@ -124,10 +125,7 @@ class IrisQrCode extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(borderRadius),
         border: showBorder
-            ? Border.all(
-                color: borderColor ?? Colors.grey.shade300,
-                width: 1,
-              )
+            ? Border.all(color: borderColor ?? Colors.grey.shade300, width: 1)
             : null,
       ),
       padding: const EdgeInsets.all(8),
@@ -159,11 +157,7 @@ class IrisQrCode extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
               ),
               padding: EdgeInsets.all(logoPadding),
-              child: SizedBox(
-                width: logoSize,
-                height: logoSize,
-                child: logo,
-              ),
+              child: SizedBox(width: logoSize, height: logoSize, child: logo),
             ),
         ],
       ),

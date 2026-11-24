@@ -56,10 +56,7 @@ extension IrisQrExport on IrisData {
       version: QrVersions.auto,
       errorCorrectionLevel: errorCorrectionLevel,
       gapless: true,
-      eyeStyle: QrEyeStyle(
-        eyeShape: QrEyeShape.square,
-        color: foregroundColor,
-      ),
+      eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: foregroundColor),
       dataModuleStyle: QrDataModuleStyle(
         dataModuleShape: QrDataModuleShape.square,
         color: foregroundColor,

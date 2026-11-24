@@ -55,11 +55,7 @@ class IrisData {
     }
   }
 
-  const IrisData._({
-    required this.type,
-    this.afm,
-    this.transactionId,
-  });
+  const IrisData._({required this.type, this.afm, this.transactionId});
 
   /// Create a static IRIS QR from an AFM (Tax ID).
   ///
